@@ -21,10 +21,11 @@ export async function generateMetadata({
   const page =
     typeof rawPage === "string" ? Math.max(1, parseInt(rawPage, 10) || 1) : 1;
 
-  // Страницы с фильтрами по породе и количеством товаров
-  // не отправляем на индексацию поисковикам
+  // Страницы с фильтрами не отправляем на индексацию поисковикам
   const hasFilters =
-    params.woodType !== undefined || params.perPage !== undefined;
+    params.woodType !== undefined ||
+    params.purpose !== undefined ||
+    params.perPage !== undefined;
 
   // Для страниц пагинации делаем отдельный title
   const title =

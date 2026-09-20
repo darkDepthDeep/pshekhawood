@@ -1,8 +1,10 @@
 import {
   BALUSTER_STYLES,
+  LEG_PURPOSES,
   POST_KINDS,
   POST_STYLES,
   WOOD_TYPES,
+  type LegPurpose,
   type PostKind,
   type Product,
   type ProductCategory,
@@ -15,6 +17,7 @@ import { mockProducts } from "@/entities/product/model/mock-data";
 export interface CatalogFilters {
   category?: ProductCategory; // Категория изделия
   woodType?: WoodType; // Порода дерева
+  purposes?: LegPurpose[]; // Назначение мебельной ножки
   postKind?: PostKind; // Столб или полустолб
   style?: ProductStyle; // Стиль изделия
   page?: number; // Текущая страница
@@ -48,6 +51,21 @@ export function getFilteredProducts(filters: CatalogFilters): {
     filtered = filtered.filter((product) => {
       return product.variants.some(
         (variant) => variant.woodType === filters.woodType,
+      );
+    });
+  }
+
+  // === Фильтр мебельных ножек по назначению ===
+  if (
+    filters.purposes &&
+    filters.purposes.length > 0 &&
+    filters.category === "legs"
+  ) {
+    filtered = filtered.filter((product) => {
+      return (
+        product.legPurposes?.some((purpose) =>
+          filters.purposes!.includes(purpose),
+        ) ?? false
       );
     });
   }
@@ -107,6 +125,7 @@ export function parseCatalogFilters(
   searchParams: URLSearchParams,
 ): CatalogFilters {
   const rawWoodType = searchParams.get("woodType");
+  const rawPurpose = searchParams.get("purpose");
   const rawPostKind = searchParams.get("postKind");
   const rawStyle = searchParams.get("style");
 
@@ -115,6 +134,20 @@ export function parseCatalogFilters(
     rawWoodType && WOOD_TYPES.some((wood) => wood.value === rawWoodType)
       ? (rawWoodType as WoodType)
       : undefined;
+
+  // Проверяем назначения мебельных ножек
+  const parsedPurposes = rawPurpose
+    ? rawPurpose
+        .split(",")
+        .map((purpose) => purpose.trim())
+        .filter((purpose): purpose is LegPurpose =>
+          LEG_PURPOSES.some((item) => item.value === purpose),
+        )
+    : [];
+
+  // Убираем повторяющиеся назначения
+  const validPurposes =
+    parsedPurposes.length > 0 ? [...new Set(parsedPurposes)] : undefined;
 
   // Проверяем вид столба
   const validPostKind =
@@ -132,6 +165,7 @@ export function parseCatalogFilters(
 
   return {
     woodType: validWoodType,
+    purposes: validPurposes,
     postKind: validPostKind,
     style: validStyle,
 

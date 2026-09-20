@@ -1,8 +1,8 @@
 "use client";
 
-import { Filter } from "lucide-react";
+import { ChevronDown, Filter } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   Select,
@@ -13,9 +13,11 @@ import {
 } from "@/components/ui/select";
 import {
   BALUSTER_STYLES,
+  LEG_PURPOSES,
   POST_KINDS,
   POST_STYLES,
   WOOD_TYPES,
+  type LegPurpose,
   type PostKind,
   type ProductStyle,
   type WoodType,
@@ -24,6 +26,7 @@ import {
 interface CatalogFiltersProps {
   currentFilters: {
     woodType?: WoodType;
+    purposes?: LegPurpose[];
     style?: ProductStyle;
     postKind?: PostKind;
     page?: number;
@@ -70,7 +73,11 @@ export default function CatalogFilters({
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const [isPurposeOpen, setIsPurposeOpen] = useState(false);
+  const purposeRef = useRef<HTMLDivElement>(null);
+
   // Определяем текущую категорию
+  const isLegsCategory = basePath === "/catalog/mebelnye-nozhki";
   const isBalustersCategory = basePath === "/catalog/balyasiny";
   const isPostsCategory = basePath === "/catalog/stolby-dlya-lestnits";
 
@@ -83,6 +90,24 @@ export default function CatalogFilters({
 
   // Стиль показываем только у балясин и столбов
   const showStyleFilter = isBalustersCategory || isPostsCategory;
+
+  // Закрываем назначения при клике вне списка
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        purposeRef.current &&
+        !purposeRef.current.contains(event.target as Node)
+      ) {
+        setIsPurposeOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   /**
    * Изменяет выбранный фильтр в URL.
@@ -115,6 +140,25 @@ export default function CatalogFilters({
     updateFilter("woodType", value === "all" ? null : value);
   };
 
+  // Изменение назначения мебельной ножки
+  const handlePurposeChange = (purpose: LegPurpose) => {
+    const currentPurposes = currentFilters.purposes ?? [];
+
+    const nextPurposes = currentPurposes.includes(purpose)
+      ? currentPurposes.filter((item) => item !== purpose)
+      : [...currentPurposes, purpose];
+
+    updateFilter(
+      "purpose",
+      nextPurposes.length > 0 ? nextPurposes.join(",") : null,
+    );
+  };
+
+  // Сбрасываем все назначения
+  const clearPurposes = () => {
+    updateFilter("purpose", null);
+  };
+
   // Изменение вида столба
   const handlePostKindChange = (value: string | null) => {
     updateFilter("postKind", value === "all" ? null : value);
@@ -124,6 +168,14 @@ export default function CatalogFilters({
   const handleStyleChange = (value: string | null) => {
     updateFilter("style", value === "all" ? null : value);
   };
+
+  // Текст кнопки назначения
+  const selectedPurposeCount = currentFilters.purposes?.length ?? 0;
+
+  const purposeLabel =
+    selectedPurposeCount > 0
+      ? `Назначение: ${selectedPurposeCount}`
+      : "Все назначения";
 
   return (
     <section
@@ -166,6 +218,69 @@ export default function CatalogFilters({
             ))}
           </SelectContent>
         </Select>
+
+        {/* Выбор назначения мебельной ножки */}
+        {isLegsCategory && (
+          <div ref={purposeRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setIsPurposeOpen((open) => !open)}
+              className="flex h-9 w-44 items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none transition hover:bg-accent sm:w-50"
+              aria-haspopup="menu"
+              aria-expanded={isPurposeOpen}
+            >
+              <span className="truncate">{purposeLabel}</span>
+
+              <ChevronDown
+                className={`size-4 shrink-0 opacity-50 transition-transform ${isPurposeOpen ? "rotate-180" : ""}`}
+                aria-hidden="true"
+              />
+            </button>
+
+            {isPurposeOpen && (
+              <div className="absolute left-0 top-full z-50 mt-1 w-56 rounded-md border bg-popover p-2 text-popover-foreground shadow-md">
+                {/* Все назначения */}
+                <button
+                  type="button"
+                  onClick={clearPurposes}
+                  className="flex w-full items-center gap-3 rounded-sm px-2 py-2 text-left text-sm transition hover:bg-accent"
+                >
+                  <span
+                    className={`flex size-4 items-center justify-center rounded border ${selectedPurposeCount === 0 ? "border-primary bg-primary text-primary-foreground" : "border-input"}`}
+                  >
+                    {selectedPurposeCount === 0 ? "✓" : ""}
+                  </span>
+
+                  <span>Все назначения</span>
+                </button>
+
+                <div className="my-1 border-t" />
+
+                {/* Отдельные назначения */}
+                {LEG_PURPOSES.map((purpose) => {
+                  const isChecked =
+                    currentFilters.purposes?.includes(purpose.value) ?? false;
+
+                  return (
+                    <label
+                      key={purpose.value}
+                      className="flex cursor-pointer items-center gap-3 rounded-sm px-2 py-2 text-sm transition hover:bg-accent"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => handlePurposeChange(purpose.value)}
+                        className="size-4 cursor-pointer accent-primary"
+                      />
+
+                      <span>{purpose.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Выбор вида столба */}
         {isPostsCategory && (

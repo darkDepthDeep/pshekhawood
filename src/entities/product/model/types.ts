@@ -1,6 +1,32 @@
 // === Порода дерева для фильтрации вариантов ===
 export type WoodType = "beech" | "ash" | "oak"; // Бук, Ясень, Дуб
 
+// Назначение мебельных ножек
+export type LegPurpose =
+  | "table"
+  | "console"
+  | "bed"
+  | "sofa"
+  | "cabinet"
+  | "dresser"
+  | "chair"
+  | "armchair";
+
+// Варианты назначения мебельных ножек
+export const LEG_PURPOSES = [
+  { value: "table", label: "Стол" },
+  { value: "console", label: "Консоль" },
+  { value: "bed", label: "Кровать" },
+  { value: "sofa", label: "Диван" },
+  { value: "cabinet", label: "Тумба" },
+  { value: "dresser", label: "Комод" },
+  { value: "chair", label: "Стул" },
+  { value: "armchair", label: "Кресло" },
+] as const satisfies ReadonlyArray<{
+  value: LegPurpose;
+  label: string;
+}>;
+
 // === Категория товара ===
 // Нужна, чтобы понимать к какому разделу относится товар:
 // мебельные ножки, балясины или столбы для лестниц
@@ -98,6 +124,8 @@ export interface Product {
   balusterStyles?: ProductStyle[]; // Стили балясины
   postStyles?: ProductStyle[]; // Стили столба
   postKind?: PostKind; // Вид столба
+
+  legPurposes?: LegPurpose[]; // Назначение мебельной ножки
   slug: string; // URL-friendly имя: "nozhka-classic" → /catalog/nozhka-classic
   category: ProductCategory; // Категория: ножки / балясины / столбы
 }
