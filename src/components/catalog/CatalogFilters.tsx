@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Filter } from "lucide-react";
+import { ChevronDown, Filter, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -91,7 +91,7 @@ export default function CatalogFilters({
   // Стиль показываем только у балясин и столбов
   const showStyleFilter = isBalustersCategory || isPostsCategory;
 
-  // Закрываем назначения при клике вне списка
+  // Закрываем список назначений при клике вне него
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -169,190 +169,308 @@ export default function CatalogFilters({
     updateFilter("style", value === "all" ? null : value);
   };
 
-  // Текст кнопки назначения
+  // Сбрасываем все выбранные фильтры
+  const clearAllFilters = () => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.delete("woodType");
+    params.delete("purpose");
+    params.delete("postKind");
+    params.delete("style");
+    params.delete("page");
+
+    const query = params.toString();
+
+    router.push(query ? `${basePath}?${query}` : basePath);
+  };
+
+  // Количество выбранных назначений
   const selectedPurposeCount = currentFilters.purposes?.length ?? 0;
 
+  // Текст кнопки назначения
   const purposeLabel =
     selectedPurposeCount > 0
       ? `Назначение: ${selectedPurposeCount}`
       : "Все назначения";
 
+  // Проверяем наличие активных фильтров
+  const hasActiveFilters =
+    Boolean(currentFilters.woodType) ||
+    Boolean(currentFilters.postKind) ||
+    Boolean(currentFilters.style) ||
+    selectedPurposeCount > 0;
+
   return (
     <section
-      className="mb-6 flex flex-col items-start justify-between gap-4 border-b border-border pb-6 sm:flex-row sm:items-center"
+      className="mb-6 border-b border-border pb-6"
       aria-label="Фильтры каталога"
     >
-      <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
-        {/* Декоративная иконка фильтра */}
-        <Filter
-          className="size-5 shrink-0 text-muted-foreground"
-          aria-hidden="true"
-        />
+      {/* Основная строка фильтров */}
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+          {/* Декоративная иконка фильтра */}
+          <Filter
+            className="size-5 shrink-0 text-muted-foreground"
+            aria-hidden="true"
+          />
 
-        {/* Выбор породы дерева */}
-        <Select
-          value={currentFilters.woodType || "all"}
-          onValueChange={handleWoodTypeChange}
-        >
-          <SelectTrigger className="w-44 sm:w-50">
-            <SelectValue placeholder="Все породы">
-              {currentFilters.woodType
-                ? WOOD_TYPES.find(
-                    (wood) => wood.value === currentFilters.woodType,
-                  )?.label
-                : "Все породы"}
-            </SelectValue>
-          </SelectTrigger>
-
-          <SelectContent
-            side="bottom"
-            align="start"
-            alignItemWithTrigger={false}
+          {/* Выбор породы дерева */}
+          <Select
+            value={currentFilters.woodType || "all"}
+            onValueChange={handleWoodTypeChange}
           >
-            <SelectItem value="all">Все породы</SelectItem>
+            <SelectTrigger className="w-44 sm:w-50">
+              <SelectValue placeholder="Все породы">
+                {currentFilters.woodType
+                  ? WOOD_TYPES.find(
+                      (wood) => wood.value === currentFilters.woodType,
+                    )?.label
+                  : "Все породы"}
+              </SelectValue>
+            </SelectTrigger>
 
-            {WOOD_TYPES.map((wood) => (
-              <SelectItem key={wood.value} value={wood.value}>
-                {wood.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        {/* Выбор назначения мебельной ножки */}
-        {isLegsCategory && (
-          <div ref={purposeRef} className="relative">
-            <button
-              type="button"
-              onClick={() => setIsPurposeOpen((open) => !open)}
-              className="flex h-9 w-44 items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none transition hover:bg-accent sm:w-50"
-              aria-haspopup="menu"
-              aria-expanded={isPurposeOpen}
+            <SelectContent
+              side="bottom"
+              align="start"
+              alignItemWithTrigger={false}
             >
-              <span className="truncate">{purposeLabel}</span>
+              <SelectItem value="all">Все породы</SelectItem>
 
-              <ChevronDown
-                className={`size-4 shrink-0 opacity-50 transition-transform ${isPurposeOpen ? "rotate-180" : ""}`}
-                aria-hidden="true"
-              />
-            </button>
+              {WOOD_TYPES.map((wood) => (
+                <SelectItem key={wood.value} value={wood.value}>
+                  {wood.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-            {isPurposeOpen && (
-              <div className="absolute left-0 top-full z-50 mt-1 w-56 rounded-md border bg-popover p-2 text-popover-foreground shadow-md">
-                {/* Все назначения */}
-                <button
-                  type="button"
-                  onClick={clearPurposes}
-                  className="flex w-full items-center gap-3 rounded-sm px-2 py-2 text-left text-sm transition hover:bg-accent"
-                >
-                  <span
-                    className={`flex size-4 items-center justify-center rounded border ${selectedPurposeCount === 0 ? "border-primary bg-primary text-primary-foreground" : "border-input"}`}
+          {/* Выбор назначения мебельной ножки */}
+          {isLegsCategory && (
+            <div ref={purposeRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setIsPurposeOpen((open) => !open)}
+                className="flex h-9 w-44 items-center justify-between gap-2 rounded-md border border-input bg-transparent px-3 text-sm shadow-xs outline-none transition hover:bg-accent sm:w-50"
+                aria-haspopup="menu"
+                aria-expanded={isPurposeOpen}
+              >
+                <span className="truncate">{purposeLabel}</span>
+
+                <ChevronDown
+                  className={`size-4 shrink-0 opacity-50 transition-transform ${isPurposeOpen ? "rotate-180" : ""}`}
+                  aria-hidden="true"
+                />
+              </button>
+
+              {isPurposeOpen && (
+                <div className="absolute left-0 top-full z-50 mt-1 w-56 rounded-md border bg-popover p-2 text-popover-foreground shadow-md">
+                  {/* Все назначения */}
+                  <button
+                    type="button"
+                    onClick={clearPurposes}
+                    className="flex w-full items-center gap-3 rounded-sm px-2 py-2 text-left text-sm transition hover:bg-accent"
                   >
-                    {selectedPurposeCount === 0 ? "✓" : ""}
-                  </span>
-
-                  <span>Все назначения</span>
-                </button>
-
-                <div className="my-1 border-t" />
-
-                {/* Отдельные назначения */}
-                {LEG_PURPOSES.map((purpose) => {
-                  const isChecked =
-                    currentFilters.purposes?.includes(purpose.value) ?? false;
-
-                  return (
-                    <label
-                      key={purpose.value}
-                      className="flex cursor-pointer items-center gap-3 rounded-sm px-2 py-2 text-sm transition hover:bg-accent"
+                    <span
+                      className={`flex size-4 items-center justify-center rounded border ${selectedPurposeCount === 0 ? "border-primary bg-primary text-primary-foreground" : "border-input"}`}
                     >
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => handlePurposeChange(purpose.value)}
-                        className="size-4 cursor-pointer accent-primary"
-                      />
+                      {selectedPurposeCount === 0 ? "✓" : ""}
+                    </span>
 
-                      <span>{purpose.label}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
+                    <span>Все назначения</span>
+                  </button>
 
-        {/* Выбор вида столба */}
-        {isPostsCategory && (
-          <Select
-            value={currentFilters.postKind || "all"}
-            onValueChange={handlePostKindChange}
-          >
-            <SelectTrigger className="w-44 sm:w-50">
-              <SelectValue placeholder="Все виды">
-                {currentFilters.postKind
-                  ? POST_KINDS.find(
-                      (kind) => kind.value === currentFilters.postKind,
-                    )?.label
-                  : "Все виды"}
-              </SelectValue>
-            </SelectTrigger>
+                  <div className="my-1 border-t" />
 
-            <SelectContent
-              side="bottom"
-              align="start"
-              alignItemWithTrigger={false}
+                  {/* Отдельные назначения */}
+                  {LEG_PURPOSES.map((purpose) => {
+                    const isChecked =
+                      currentFilters.purposes?.includes(purpose.value) ?? false;
+
+                    return (
+                      <label
+                        key={purpose.value}
+                        className="flex cursor-pointer items-center gap-3 rounded-sm px-2 py-2 text-sm transition hover:bg-accent"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handlePurposeChange(purpose.value)}
+                          className="size-4 cursor-pointer accent-primary"
+                        />
+
+                        <span>{purpose.label}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Выбор вида столба */}
+          {isPostsCategory && (
+            <Select
+              value={currentFilters.postKind || "all"}
+              onValueChange={handlePostKindChange}
             >
-              <SelectItem value="all">Все виды</SelectItem>
+              <SelectTrigger className="w-44 sm:w-50">
+                <SelectValue placeholder="Все виды">
+                  {currentFilters.postKind
+                    ? POST_KINDS.find(
+                        (kind) => kind.value === currentFilters.postKind,
+                      )?.label
+                    : "Все виды"}
+                </SelectValue>
+              </SelectTrigger>
 
-              {POST_KINDS.map((kind) => (
-                <SelectItem key={kind.value} value={kind.value}>
-                  {kind.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+              <SelectContent
+                side="bottom"
+                align="start"
+                alignItemWithTrigger={false}
+              >
+                <SelectItem value="all">Все виды</SelectItem>
 
-        {/* Выбор стиля изделия */}
-        {showStyleFilter && (
-          <Select
-            value={currentFilters.style || "all"}
-            onValueChange={handleStyleChange}
-          >
-            <SelectTrigger className="w-44 sm:w-50">
-              <SelectValue placeholder="Все стили">
-                {currentFilters.style
-                  ? styleOptions.find(
-                      (style) => style.value === currentFilters.style,
-                    )?.label
-                  : "Все стили"}
-              </SelectValue>
-            </SelectTrigger>
+                {POST_KINDS.map((kind) => (
+                  <SelectItem key={kind.value} value={kind.value}>
+                    {kind.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
-            <SelectContent
-              side="bottom"
-              align="start"
-              alignItemWithTrigger={false}
+          {/* Выбор стиля изделия */}
+          {showStyleFilter && (
+            <Select
+              value={currentFilters.style || "all"}
+              onValueChange={handleStyleChange}
             >
-              <SelectItem value="all">Все стили</SelectItem>
+              <SelectTrigger className="w-44 sm:w-50">
+                <SelectValue placeholder="Все стили">
+                  {currentFilters.style
+                    ? styleOptions.find(
+                        (style) => style.value === currentFilters.style,
+                      )?.label
+                    : "Все стили"}
+                </SelectValue>
+              </SelectTrigger>
 
-              {styleOptions.map((style) => (
-                <SelectItem key={style.value} value={style.value}>
-                  {style.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        )}
+              <SelectContent
+                side="bottom"
+                align="start"
+                alignItemWithTrigger={false}
+              >
+                <SelectItem value="all">Все стили</SelectItem>
+
+                {styleOptions.map((style) => (
+                  <SelectItem key={style.value} value={style.value}>
+                    {style.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+
+        {/* Количество найденных товаров */}
+        <output
+          className="shrink-0 text-sm text-muted-foreground"
+          aria-live="polite"
+        >
+          Найдено:{" "}
+          <span className="font-medium text-foreground">{totalProducts}</span>{" "}
+          {getProductWord(totalProducts)}
+        </output>
       </div>
 
-      {/* Количество найденных товаров */}
-      <output className="text-sm text-muted-foreground" aria-live="polite">
-        Найдено:{" "}
-        <span className="font-medium text-foreground">{totalProducts}</span>{" "}
-        {getProductWord(totalProducts)}
-      </output>
+      {/* Активные фильтры */}
+      {hasActiveFilters && (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="mr-1 text-xs font-medium text-muted-foreground">
+            Выбрано:
+          </span>
+
+          {/* Активная порода дерева */}
+          {currentFilters.woodType && (
+            <button
+              type="button"
+              onClick={() => updateFilter("woodType", null)}
+              className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-sm font-medium text-foreground transition hover:border-primary/40 hover:bg-accent"
+            >
+              {
+                WOOD_TYPES.find(
+                  (wood) => wood.value === currentFilters.woodType,
+                )?.label
+              }
+
+              <X className="size-3.5" aria-hidden="true" />
+            </button>
+          )}
+
+          {/* Активные назначения ножки */}
+          {currentFilters.purposes?.map((purpose) => {
+            const purposeName = LEG_PURPOSES.find(
+              (item) => item.value === purpose,
+            )?.label;
+
+            return (
+              <button
+                key={purpose}
+                type="button"
+                onClick={() => handlePurposeChange(purpose)}
+                className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-sm font-medium text-foreground transition hover:border-primary/40 hover:bg-accent"
+              >
+                {purposeName}
+
+                <X className="size-3.5" aria-hidden="true" />
+              </button>
+            );
+          })}
+
+          {/* Активный вид столба */}
+          {currentFilters.postKind && (
+            <button
+              type="button"
+              onClick={() => updateFilter("postKind", null)}
+              className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-sm font-medium text-foreground transition hover:border-primary/40 hover:bg-accent"
+            >
+              {
+                POST_KINDS.find(
+                  (kind) => kind.value === currentFilters.postKind,
+                )?.label
+              }
+
+              <X className="size-3.5" aria-hidden="true" />
+            </button>
+          )}
+
+          {/* Активный стиль */}
+          {currentFilters.style && (
+            <button
+              type="button"
+              onClick={() => updateFilter("style", null)}
+              className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-sm font-medium text-foreground transition hover:border-primary/40 hover:bg-accent"
+            >
+              {
+                styleOptions.find(
+                  (style) => style.value === currentFilters.style,
+                )?.label
+              }
+
+              <X className="size-3.5" aria-hidden="true" />
+            </button>
+          )}
+
+          {/* Сброс всех фильтров */}
+          <button
+            type="button"
+            onClick={clearAllFilters}
+            className="ml-1 text-sm font-medium text-primary transition hover:underline"
+          >
+            Сбросить все
+          </button>
+        </div>
+      )}
     </section>
   );
 }

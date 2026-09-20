@@ -1,5 +1,6 @@
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
+
 import type { Product, WoodType } from "../model/types";
 
 interface ProductCardPreviewProps {
@@ -8,41 +9,49 @@ interface ProductCardPreviewProps {
 }
 
 /**
- * Упрощенная карточка для каталога (витрина).
- * Только фото, название, цена "от" и ссылка на детальную страницу.
+ * Упрощённая карточка товара для каталога.
  */
 export function ProductCardPreview({
   product,
   activeWoodType,
 }: ProductCardPreviewProps) {
-  // Если порода выбрана — считаем минимум только по ней, иначе — по всем
+  // Если порода выбрана — считаем цену только по ней
   const relevantVariants = activeWoodType
-    ? product.variants.filter((v) => v.woodType === activeWoodType)
+    ? product.variants.filter((variant) => variant.woodType === activeWoodType)
     : product.variants;
 
-  // Варианты, по которым считаем цену
+  // Если для выбранной породы вариантов нет — используем все варианты
   const variantsForPrice =
     relevantVariants.length > 0 ? relevantVariants : product.variants;
 
-  // Берём только варианты с указанной ценой
+  // Берём только корректно указанные цены
   const availablePrices = variantsForPrice
     .map((variant) => variant.price)
-    .filter((price): price is number => price !== null);
+    .filter(
+      (price): price is number =>
+        price !== null && Number.isFinite(price) && price > 0,
+    );
 
-  // Минимальная цена, null — цена по запросу
+  // Минимальная цена товара
   const minPrice =
     availablePrices.length > 0 ? Math.min(...availablePrices) : null;
 
-  // Ссылка на товар по slug с сохранением породы
+  // Сохраняем выбранную породу при переходе в карточку
   const href = activeWoodType
     ? `/catalog/${product.slug}?woodType=${activeWoodType}`
     : `/catalog/${product.slug}`;
 
+  // Единый формат фотографий в каталоге
+  const imageAspect = "aspect-[4/5]";
+
   return (
-    // article: самостоятельная единица контента (товар)
-    <article className="group bg-card rounded-xl overflow-hidden border border-border shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1 h-full flex flex-col">
-      {/* Изображение или заглушка */}
-      <div className="relative aspect-4/5 shrink-0 overflow-hidden bg-muted">
+    <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+      {/* Фото товара */}
+      <Link
+        href={href}
+        tabIndex={-1}
+        className={`relative block ${imageAspect} shrink-0 overflow-hidden bg-card`}
+      >
         {product.images?.[0] ? (
           <Image
             src={product.images[0]}
@@ -53,22 +62,22 @@ export function ProductCardPreview({
             loading="lazy"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-muted-foreground text-sm select-none">
+          <div className="flex h-full items-center justify-center text-sm text-muted-foreground select-none">
             Фото товара
           </div>
         )}
-      </div>
+      </Link>
 
-      {/* Контент карточки */}
-      <div className="p-5 flex flex-col grow">
-        {/* h3 внутри Link: заголовок стал кликабельным, но сохранил семантику */}
+      {/* Информация о товаре */}
+      <div className="flex grow flex-col p-5">
+        {/* Название товара */}
         <h3 className="min-h-10 line-clamp-2 text-base font-bold leading-tight text-card-foreground">
-          <Link href={href} className="hover:text-primary transition-colors">
+          <Link href={href} className="transition-colors hover:text-primary">
             {product.name}
           </Link>
         </h3>
 
-        <div className="mt-5 flex items-end justify-between gap-3">
+        <div className="mt-auto flex items-end justify-between gap-3 pt-5">
           {/* Цена товара */}
           <div className="min-w-0">
             <span className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground">
@@ -86,7 +95,7 @@ export function ProductCardPreview({
             )}
           </div>
 
-          {/*  aria-label: скринридер прочитает контекст кнопки */}
+          {/* Переход в карточку товара */}
           <Link
             href={href}
             aria-label={`Подробнее о товаре ${product.name}`}
