@@ -4,7 +4,7 @@ export type WoodType = "beech" | "ash" | "oak"; // Бук, Ясень, Дуб
 // === Категория товара ===
 // Нужна, чтобы понимать к какому разделу относится товар:
 // мебельные ножки, балясины или столбы для лестниц
-export type ProductCategory = "legs" | "balusters" | "posts";
+export type ProductCategory = "legs" | "balusters" | "posts" | "finials";
 
 // Список всех категорий каталога
 export const PRODUCT_CATEGORIES: {
@@ -27,6 +27,11 @@ export const PRODUCT_CATEGORIES: {
     label: "Столбы для лестниц",
     slug: "stolby-dlya-lestnits",
   },
+  {
+    value: "finials",
+    label: "Навершия для столбов",
+    slug: "navershiya-dlya-stolbov",
+  },
 ];
 
 export const WOOD_TYPES: { value: WoodType; label: string }[] = [
@@ -34,8 +39,6 @@ export const WOOD_TYPES: { value: WoodType; label: string }[] = [
   { value: "ash", label: "Ясень" },
   { value: "oak", label: "Дуб" },
 ];
-
-// === Типы и стили балясин ===
 
 // === Стили изделий ===
 export type ProductStyle = "twisted" | "fluted" | "carved" | "classic";
@@ -62,6 +65,17 @@ export const POST_STYLES: {
   { value: "classic", label: "Классические" },
 ];
 
+// === Виды столбов ===
+export type PostKind = "post" | "half-post";
+
+export const POST_KINDS: {
+  value: PostKind;
+  label: string;
+}[] = [
+  { value: "post", label: "Столбы" },
+  { value: "half-post", label: "Полустолбы" },
+];
+
 // === Вариант товара (размер, цена, остаток) ===
 export interface ProductVariant {
   id: string;
@@ -72,7 +86,7 @@ export interface ProductVariant {
   leadTime: string; // Срок изготовления: "7-10 дней", "2-3 недели"
 }
 
-// Товар (карточка мебельной ножки)
+// === Карточка товара ===
 
 export interface Product {
   id: string;
@@ -83,6 +97,7 @@ export interface Product {
   variants: ProductVariant[]; // Все доступные размеры этого товара
   balusterStyles?: ProductStyle[]; // Стили балясины
   postStyles?: ProductStyle[]; // Стили столба
+  postKind?: PostKind; // Вид столба
   slug: string; // URL-friendly имя: "nozhka-classic" → /catalog/nozhka-classic
   category: ProductCategory; // Категория: ножки / балясины / столбы
 }

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, type SubmitEventHandler } from "react";
+import type { ProductCategory } from "@/entities/product/model/types";
 
 type FieldErrors = {
   name?: string;
@@ -18,7 +19,7 @@ interface CustomOrderFormProps {
   initialProduct?: {
     name: string;
     slug: string;
-    category: "legs" | "balusters" | "posts";
+    category: ProductCategory;
   };
   initialWood?: "beech" | "ash" | "oak";
   initialQuantity?: number;
@@ -368,6 +369,8 @@ export function CustomOrderForm({
             <option value="balusters">Балясины</option>
 
             <option value="posts">Столбы для лестниц</option>
+
+            <option value="finials">Навершия для столбов</option>
 
             <option value="other">Другое изделие</option>
           </select>

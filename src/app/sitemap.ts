@@ -41,6 +41,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: new URL("/catalog/navershiya-dlya-stolbov", siteUrl).toString(),
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
       url: new URL("/custom-order", siteUrl).toString(),
       changeFrequency: "monthly",
       priority: 0.8,

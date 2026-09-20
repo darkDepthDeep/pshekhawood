@@ -5,34 +5,36 @@ const directions = [
   {
     title: "Мебельные ножки",
     description:
-      "Мебельные ножки из массива дерева для столов, тумб и другой мебели. Стандартные размеры и изготовление на заказ.",
-    href: "/catalog?category=legs",
+      "Ножки из массива дерева для столов, стульев, тумб и другой мебели.",
+    href: "/catalog/mebelnye-nozhki",
     image: "/images/nozhki.jpg",
     alt: "Мебельные ножки из массива дерева",
   },
   {
     title: "Балясины",
     description:
-      "Точёные балясины из дерева для лестниц, ограждений и интерьерных конструкций.",
-    href: "/catalog?category=balusters",
+      "Балясины из массива дерева для лестниц, ограждений и интерьеров.",
+    href: "/catalog/balyasiny",
     image: "/images/balyasin.jpg",
-    alt: "Точёные балясины из дерева для лестниц",
+    alt: "Деревянные балясины для лестниц",
   },
   {
     title: "Столбы для лестниц",
     description:
-      "Столбы из дерева для лестниц, перил и ограждений. Изготовление стандартных и индивидуальных размеров.",
-    href: "/catalog?category=posts",
+      "Деревянные столбы и полустолбы стандартных и индивидуальных размеров.",
+    href: "/catalog/stolby-dlya-lestnits",
     image: "/images/stolbi.jpg",
     alt: "Деревянные столбы для лестниц",
   },
   {
-    title: "Изделия на заказ",
+    title: "Навершия",
     description:
-      "Изготавливаем деревянные изделия по индивидуальным размерам, чертежам и требованиям заказчика.",
-    href: "/custom-order",
-    image: "/images/nazakaz.jpg",
-    alt: "Деревянные изделия на заказ",
+      "Навершия из массива дерева для лестничных столбов разных форм и размеров.",
+    href: "/catalog/navershiya-dlya-stolbov",
+
+    // Временно используем фото столбов, пока не добавим отдельное фото наверший
+    image: "/images/navershiya-dlya-stolbov.jpg",
+    alt: "Деревянные навершия для лестничных столбов",
   },
 ] as const;
 
@@ -54,31 +56,18 @@ export function Directions() {
           </h2>
 
           <p className="mt-4 text-base leading-7 text-muted-foreground sm:text-lg">
-            Изготавливаем деревянные изделия для мебели, лестниц и
+            Изготавливаем изделия из массива дерева для мебели, лестниц и
             индивидуальных проектов.
           </p>
         </div>
 
-        {/* Направления */}
-        <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Основные категории */}
+        <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {directions.map((direction) => (
             <li key={direction.title}>
               <Link
                 href={direction.href}
-                className="
-                  group
-                  flex
-                  h-full
-                  flex-col
-                  overflow-hidden
-                  rounded-2xl
-                  border
-                  bg-card
-                  shadow-sm
-                  transition-all
-                  hover:-translate-y-1
-                  hover:shadow-md
-                "
+                className="group flex h-full flex-col overflow-hidden rounded-2xl border bg-card shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
               >
                 {/* Фото */}
                 <div className="relative aspect-4/3 overflow-hidden">
@@ -86,17 +75,8 @@ export function Directions() {
                     src={direction.image}
                     alt={direction.alt}
                     fill
-                    sizes="
-                      (max-width: 639px) 100vw,
-                      (max-width: 1023px) 50vw,
-                      25vw
-                    "
-                    className="
-                      object-cover
-                      transition-transform
-                      duration-500
-                      group-hover:scale-105
-                    "
+                    sizes="(max-width: 639px) 100vw, (max-width: 1023px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
 
@@ -110,24 +90,35 @@ export function Directions() {
                     {direction.description}
                   </p>
 
-                  <span
-                    className="
-                      mt-auto
-                      pt-6
-                      text-sm
-                      font-semibold
-                      text-primary
-                      transition-transform
-                      group-hover:translate-x-1
-                    "
-                  >
-                    Перейти в раздел →
+                  <span className="mt-auto pt-6 text-sm font-semibold text-primary transition-transform group-hover:translate-x-1">
+                    Смотреть каталог →
                   </span>
                 </div>
               </Link>
             </li>
           ))}
         </ul>
+
+        {/* Индивидуальное изготовление */}
+        <div className="mt-6 flex flex-col items-start justify-between gap-6 rounded-2xl border bg-card p-6 shadow-sm sm:p-8 md:flex-row md:items-center">
+          <div className="max-w-3xl">
+            <h3 className="text-2xl font-bold tracking-tight">
+              Не нашли подходящее изделие?
+            </h3>
+
+            <p className="mt-2 leading-7 text-muted-foreground">
+              Изготовим деревянное изделие по вашему размеру, фотографии,
+              чертежу или 3D-модели.
+            </p>
+          </div>
+
+          <Link
+            href="/custom-order"
+            className="shrink-0 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+          >
+            Изготовление на заказ →
+          </Link>
+        </div>
       </div>
     </section>
   );

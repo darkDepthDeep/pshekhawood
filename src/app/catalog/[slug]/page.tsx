@@ -4,7 +4,11 @@ import { notFound } from "next/navigation";
 
 import { mockProducts } from "@/entities/product/model/mock-data";
 import { ProductCard } from "@/entities/product/ui/ProductCard";
-import { WOOD_TYPES, type WoodType } from "@/entities/product/model/types";
+import {
+  WOOD_TYPES,
+  type ProductCategory,
+  type WoodType,
+} from "@/entities/product/model/types";
 import { getCanonicalUrl } from "@/lib/site";
 
 interface ProductPageProps {
@@ -19,9 +23,15 @@ function getProduct(slug: string) {
   return mockProducts.find((product) => product.slug === slug);
 }
 
-// Данные категории для хлебных крошек
-function getCategoryData(category: "legs" | "balusters" | "posts") {
-  const categories = {
+// Данные категорий для хлебных крошек
+function getCategoryData(category: ProductCategory) {
+  const categories: Record<
+    ProductCategory,
+    {
+      label: string;
+      href: string;
+    }
+  > = {
     legs: {
       label: "Мебельные ножки",
       href: "/catalog/mebelnye-nozhki",
@@ -33,6 +43,10 @@ function getCategoryData(category: "legs" | "balusters" | "posts") {
     posts: {
       label: "Столбы для лестниц",
       href: "/catalog/stolby-dlya-lestnits",
+    },
+    finials: {
+      label: "Навершия для столбов",
+      href: "/catalog/navershiya-dlya-stolbov",
     },
   };
 
@@ -190,12 +204,7 @@ export default async function ProductPage({
     },
 
     // Категория товара
-    category:
-      product.category === "legs"
-        ? "Мебельные ножки"
-        : product.category === "balusters"
-          ? "Балясины"
-          : "Столбы для лестниц",
+    category: category.label,
 
     // Основной URL добавится после подключения настоящего домена
     ...(productUrl

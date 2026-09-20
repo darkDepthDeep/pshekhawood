@@ -17,6 +17,10 @@ const categories = [
     href: "/catalog/stolby-dlya-lestnits",
     label: "Столбы для лестниц",
   },
+  {
+    href: "/catalog/navershiya-dlya-stolbov",
+    label: "Навершия для столбов",
+  },
 ];
 
 interface CatalogCategoriesProps {

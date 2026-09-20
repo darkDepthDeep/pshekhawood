@@ -28,24 +28,31 @@ export function Footer() {
               className="mt-4 flex flex-col items-start gap-3"
             >
               <Link
-                href="/catalog?category=legs"
+                href="/catalog/mebelnye-nozhki"
                 className="text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 Мебельные ножки
               </Link>
 
               <Link
-                href="/catalog?category=balusters"
+                href="/catalog/balyasiny"
                 className="text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 Балясины
               </Link>
 
               <Link
-                href="/catalog?category=posts"
+                href="/catalog/stolby-dlya-lestnits"
                 className="text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 Столбы для лестниц
+              </Link>
+
+              <Link
+                href="/catalog/navershiya-dlya-stolbov"
+                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Навершия для столбов
               </Link>
 
               <Link

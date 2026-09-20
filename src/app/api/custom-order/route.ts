@@ -17,6 +17,7 @@ const productNames: Record<string, string> = {
   legs: "Мебельные ножки",
   balusters: "Балясины",
   posts: "Столбы для лестниц",
+  finials: "Навершия для столбов",
   other: "Другое изделие",
 };
 
@@ -26,7 +27,13 @@ const woodNames: Record<string, string> = {
   oak: "Дуб",
 };
 
-const allowedProductTypes = new Set(["legs", "balusters", "posts", "other"]);
+const allowedProductTypes = new Set([
+  "legs",
+  "balusters",
+  "posts",
+  "finials",
+  "other",
+]);
 
 const allowedWoods = new Set(["", "beech", "ash", "oak"]);
 

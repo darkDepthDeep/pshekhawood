@@ -1,7 +1,9 @@
 import {
   BALUSTER_STYLES,
+  POST_KINDS,
   POST_STYLES,
   WOOD_TYPES,
+  type PostKind,
   type Product,
   type ProductCategory,
   type ProductStyle,
@@ -13,6 +15,7 @@ import { mockProducts } from "@/entities/product/model/mock-data";
 export interface CatalogFilters {
   category?: ProductCategory; // Категория изделия
   woodType?: WoodType; // Порода дерева
+  postKind?: PostKind; // Столб или полустолб
   style?: ProductStyle; // Стиль изделия
   page?: number; // Текущая страница
   perPage?: number; // Количество товаров на странице
@@ -46,6 +49,13 @@ export function getFilteredProducts(filters: CatalogFilters): {
       return product.variants.some(
         (variant) => variant.woodType === filters.woodType,
       );
+    });
+  }
+
+  // === Фильтр столбов по виду изделия ===
+  if (filters.postKind && filters.category === "posts") {
+    filtered = filtered.filter((product) => {
+      return product.postKind === filters.postKind;
     });
   }
 
@@ -97,6 +107,7 @@ export function parseCatalogFilters(
   searchParams: URLSearchParams,
 ): CatalogFilters {
   const rawWoodType = searchParams.get("woodType");
+  const rawPostKind = searchParams.get("postKind");
   const rawStyle = searchParams.get("style");
 
   // Проверяем породу дерева
@@ -105,7 +116,13 @@ export function parseCatalogFilters(
       ? (rawWoodType as WoodType)
       : undefined;
 
-  // Проверяем стиль по всем допустимым стилям
+  // Проверяем вид столба
+  const validPostKind =
+    rawPostKind && POST_KINDS.some((kind) => kind.value === rawPostKind)
+      ? (rawPostKind as PostKind)
+      : undefined;
+
+  // Проверяем стиль изделия
   const validStyles = [...BALUSTER_STYLES, ...POST_STYLES];
 
   const validStyle =
@@ -115,6 +132,7 @@ export function parseCatalogFilters(
 
   return {
     woodType: validWoodType,
+    postKind: validPostKind,
     style: validStyle,
 
     // Номер страницы
