@@ -124,7 +124,6 @@ export interface Product {
   balusterStyles?: ProductStyle[]; // Стили балясины
   postStyles?: ProductStyle[]; // Стили столба
   postKind?: PostKind; // Вид столба
-
   legPurposes?: LegPurpose[]; // Назначение мебельной ножки
   slug: string; // URL-friendly имя: "nozhka-classic" → /catalog/nozhka-classic
   category: ProductCategory; // Категория: ножки / балясины / столбы

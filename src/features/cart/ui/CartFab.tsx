@@ -36,11 +36,11 @@ export function CartFab() {
     return (
       <Button
         size="icon"
-        className="fixed bottom-4 right-4 z-50 size-12 rounded-full shadow-lg sm:bottom-6 sm:right-6 sm:size-14"
+        className="fixed bottom-6 right-6 z-50 hidden size-14 rounded-full shadow-lg sm:inline-flex"
         disabled
         aria-label="Корзина загружается"
       >
-        <ShoppingCart className="size-5 sm:size-6" aria-hidden="true" />
+        <ShoppingCart className="size-6" aria-hidden="true" />
       </Button>
     );
   }
@@ -48,12 +48,12 @@ export function CartFab() {
   return (
     <Button
       size="icon"
-      className="fixed bottom-4 right-4 z-50 size-12 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 sm:bottom-6 sm:right-6 sm:size-14"
+      className="fixed bottom-6 right-6 z-50 hidden size-14 rounded-full shadow-lg transition-transform hover:scale-105 active:scale-95 sm:inline-flex"
       onClick={() => setOpen(true)}
       aria-label={`Корзина, ${totalItems} товаров`}
     >
       {/* Иконка корзины */}
-      <ShoppingCart className="size-5 sm:size-6" aria-hidden="true" />
+      <ShoppingCart className="size-6" aria-hidden="true" />
 
       {/* Количество товаров */}
       {totalItems > 0 && (

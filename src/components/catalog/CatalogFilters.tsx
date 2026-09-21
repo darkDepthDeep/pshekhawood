@@ -130,7 +130,9 @@ export default function CatalogFilters({
 
       const query = params.toString();
 
-      router.push(query ? `${basePath}?${query}` : basePath);
+      router.push(query ? `${basePath}?${query}` : basePath, {
+        scroll: false,
+      });
     },
     [basePath, router, searchParams],
   );
@@ -181,7 +183,9 @@ export default function CatalogFilters({
 
     const query = params.toString();
 
-    router.push(query ? `${basePath}?${query}` : basePath);
+    router.push(query ? `${basePath}?${query}` : basePath, {
+      scroll: false,
+    });
   };
 
   // Количество выбранных назначений
@@ -246,7 +250,7 @@ export default function CatalogFilters({
 
           {/* Выбор назначения мебельной ножки */}
           {isLegsCategory && (
-            <div ref={purposeRef} className="relative">
+            <div ref={purposeRef} className="relative ml-8 sm:ml-0">
               <button
                 type="button"
                 onClick={() => setIsPurposeOpen((open) => !open)}
