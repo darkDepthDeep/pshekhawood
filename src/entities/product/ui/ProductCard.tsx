@@ -70,6 +70,10 @@ export function ProductCard({ product, initialWoodType }: ProductCardProps) {
   useEffect(() => {
     if (!isImageOpen) return;
 
+    // Блокируем прокрутку страницы под открытой фотографией
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsImageOpen(false);
@@ -87,6 +91,7 @@ export function ProductCard({ product, initialWoodType }: ProductCardProps) {
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
+      document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isImageOpen, showPreviousImage, showNextImage]);
@@ -358,11 +363,11 @@ export function ProductCard({ product, initialWoodType }: ProductCardProps) {
           </div>
 
           {/* Количество и цена */}
-          <div className="mb-4 flex items-center justify-between gap-4">
+          <div className="mb-4 grid gap-4 sm:grid-cols-2 sm:items-end">
             <div className="space-y-1.5">
               <label
                 htmlFor="quantity-input"
-                className="pr-2 text-sm font-medium"
+                className="block text-sm font-medium"
               >
                 Количество
               </label>
@@ -377,17 +382,26 @@ export function ProductCard({ product, initialWoodType }: ProductCardProps) {
               />
             </div>
 
-            <output className="text-2xl font-bold" aria-live="polite">
-              {totalPrice === null
-                ? "Цена по запросу"
-                : `${totalPrice.toLocaleString("ru-RU")} ₽`}
-            </output>
+            <div className="sm:text-right">
+              <span className="mb-1 block text-xs text-muted-foreground">
+                Стоимость
+              </span>
+
+              <output
+                className="text-xl font-bold sm:text-2xl"
+                aria-live="polite"
+              >
+                {totalPrice === null
+                  ? "Цена по запросу"
+                  : `${totalPrice.toLocaleString("ru-RU")} ₽`}
+              </output>
+            </div>
           </div>
 
           {/* Артикул и срок изготовления */}
-          <dl className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
+          <dl className="mb-3 flex flex-col gap-2 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
             <dt className="sr-only">Артикул</dt>
-            <dd>Арт. {selectedVariant.sku}</dd>
+            <dd className="break-words">Арт. {selectedVariant.sku}</dd>
 
             <dt className="sr-only">Срок изготовления</dt>
             <dd className="flex items-center gap-1.5">
@@ -440,7 +454,7 @@ export function ProductCard({ product, initialWoodType }: ProductCardProps) {
           aria-modal="true"
           aria-label={`Увеличенное фото товара ${product.name}`}
           onClick={() => setIsImageOpen(false)}
-          className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 p-4"
+          className="fixed inset-0 z-100 flex items-center justify-center bg-black/90 p-3 sm:p-4"
         >
           {/* Закрытие */}
           <button
