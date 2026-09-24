@@ -21,8 +21,9 @@ export async function generateMetadata({
   const page =
     typeof rawPage === "string" ? Math.max(1, parseInt(rawPage, 10) || 1) : 1;
 
-  // Страницы с фильтрами не индексируем
+  // Страницы с фильтрами и поиском не индексируем
   const hasFilters =
+    params.q !== undefined ||
     params.woodType !== undefined ||
     params.style !== undefined ||
     params.perPage !== undefined;
@@ -76,7 +77,7 @@ export async function generateMetadata({
       description,
     },
 
-    // Страницы с фильтрами не индексируем
+    // Страницы с фильтрами и поиском не индексируем
     robots: {
       index: !hasFilters,
       follow: true,

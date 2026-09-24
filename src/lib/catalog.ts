@@ -3,6 +3,7 @@ import {
   LEG_PURPOSES,
   POST_KINDS,
   POST_STYLES,
+  PRODUCT_CATEGORIES,
   WOOD_TYPES,
   type LegPurpose,
   type PostKind,
@@ -16,6 +17,7 @@ import { mockProducts } from "@/entities/product/model/mock-data";
 // === Фильтры каталога ===
 export interface CatalogFilters {
   category?: ProductCategory; // Категория изделия
+  query?: string; // Поисковый запрос
   woodType?: WoodType; // Порода дерева
   purposes?: LegPurpose[]; // Назначение мебельной ножки
   postKind?: PostKind; // Столб или полустолб
@@ -26,6 +28,79 @@ export interface CatalogFilters {
 
 // Количество товаров на странице
 const ITEMS_PER_PAGE = 12;
+
+// Нормализуем текст для поиска
+export function normalizeSearchText(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/ё/g, "е")
+    .replace(/[×х]/g, "x")
+    .replace(/[–—−]/g, "-")
+    .replace(/[^a-zа-я0-9]+/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Формируем текст, по которому ищем товар
+export function getProductSearchText(product: Product) {
+  const categoryLabel =
+    PRODUCT_CATEGORIES.find((item) => item.value === product.category)?.label ??
+    "";
+
+  const woodLabels = product.variants
+    .map(
+      (variant) =>
+        WOOD_TYPES.find((wood) => wood.value === variant.woodType)?.label ?? "",
+    )
+    .join(" ");
+
+  const purposeLabels =
+    product.legPurposes
+      ?.map(
+        (purpose) =>
+          LEG_PURPOSES.find((item) => item.value === purpose)?.label ?? "",
+      )
+      .join(" ") ?? "";
+
+  const postKindLabel = product.postKind
+    ? (POST_KINDS.find((item) => item.value === product.postKind)?.label ?? "")
+    : "";
+
+  const styleLabels = [
+    ...(product.balusterStyles ?? []),
+    ...(product.postStyles ?? []),
+  ]
+    .map(
+      (style) =>
+        [...BALUSTER_STYLES, ...POST_STYLES].find(
+          (item) => item.value === style,
+        )?.label ?? "",
+    )
+    .join(" ");
+
+  const variantsText = product.variants
+    .map((variant) =>
+      [variant.id, variant.sku, variant.size, variant.woodType].join(" "),
+    )
+    .join(" ");
+
+  return normalizeSearchText(
+    [
+      product.id,
+      product.name,
+      product.description,
+      product.material,
+      product.slug,
+      product.category,
+      categoryLabel,
+      woodLabels,
+      purposeLabels,
+      postKindLabel,
+      styleLabels,
+      variantsText,
+    ].join(" "),
+  );
+}
 
 /**
  * Фильтрует товары и выполняет пагинацию.
@@ -38,6 +113,19 @@ export function getFilteredProducts(filters: CatalogFilters): {
 } {
   // Создаём копию массива
   let filtered = [...mockProducts];
+
+  // === Поиск по каталогу ===
+  if (filters.query) {
+    const searchWords = normalizeSearchText(filters.query)
+      .split(" ")
+      .filter(Boolean);
+
+    filtered = filtered.filter((product) => {
+      const searchText = getProductSearchText(product);
+
+      return searchWords.every((word) => searchText.includes(word));
+    });
+  }
 
   // === Фильтр по категории ===
   if (filters.category) {
@@ -124,10 +212,14 @@ export function getFilteredProducts(filters: CatalogFilters): {
 export function parseCatalogFilters(
   searchParams: URLSearchParams,
 ): CatalogFilters {
+  const rawQuery = searchParams.get("q");
   const rawWoodType = searchParams.get("woodType");
   const rawPurpose = searchParams.get("purpose");
   const rawPostKind = searchParams.get("postKind");
   const rawStyle = searchParams.get("style");
+
+  // Проверяем поисковый запрос
+  const validQuery = rawQuery?.trim().slice(0, 100) || undefined;
 
   // Проверяем породу дерева
   const validWoodType =
@@ -164,6 +256,7 @@ export function parseCatalogFilters(
       : undefined;
 
   return {
+    query: validQuery,
     woodType: validWoodType,
     purposes: validPurposes,
     postKind: validPostKind,

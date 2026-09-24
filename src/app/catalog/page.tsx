@@ -10,6 +10,7 @@ import ProductGrid from "@/components/catalog/ProductGrid";
 import CatalogFilters from "@/components/catalog/CatalogFilters";
 import LoadingSkeleton from "@/components/catalog/LoadingSkeleton";
 import { CatalogCategories } from "@/components/catalog/CatalogCategories";
+import { CatalogSearch } from "@/components/catalog/CatalogSearch";
 import { getCanonicalUrl } from "@/lib/site";
 
 type CatalogSearchParams = Record<string, string | string[] | undefined>;
@@ -31,9 +32,12 @@ export async function generateMetadata({
   const page =
     typeof rawPage === "string" ? Math.max(1, parseInt(rawPage, 10) || 1) : 1;
 
-  // Страницы с фильтрами не индексируем
+  // Страницы с фильтрами и поиском не индексируем
   const hasFilters =
+    params.q !== undefined ||
     params.woodType !== undefined ||
+    params.purpose !== undefined ||
+    params.postKind !== undefined ||
     params.style !== undefined ||
     params.perPage !== undefined;
 
@@ -44,11 +48,11 @@ export async function generateMetadata({
 
   const description =
     page > 1
-      ? `Каталог изделий PshekhaWood — страница ${page}. Мебельные ножки, балясины и столбы для лестниц из массива дерева.`
-      : "Каталог изделий PshekhaWood: мебельные ножки, балясины и столбы для лестниц из массива дерева.";
+      ? `Каталог изделий PshekhaWood — страница ${page}. Мебельные ножки, балясины, столбы и навершия из массива дерева.`
+      : "Каталог изделий PshekhaWood: мебельные ножки, балясины, столбы для лестниц и навершия из массива дерева.";
 
   // Основной URL текущей страницы каталога
-  // Фильтры woodType, style и perPage в canonical не добавляем
+  // Поиск и фильтры в canonical не добавляем
   const canonicalPath = page > 1 ? `/catalog?page=${page}` : "/catalog";
 
   const canonical = getCanonicalUrl(canonicalPath);
@@ -86,7 +90,7 @@ export async function generateMetadata({
       description,
     },
 
-    // Страницы с фильтрами не индексируем
+    // Страницы с фильтрами и поиском не индексируем
     robots: {
       index: !hasFilters,
       follow: true,
@@ -96,29 +100,28 @@ export async function generateMetadata({
 
 // Серверная страница каталога
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
-  // Ждем разрешения промиса searchParams (Next.js 15 requirement)
   const resolvedParams = await searchParams;
 
   // Преобразуем параметры Next.js в URLSearchParams
   const urlSearchParams = new URLSearchParams(
     Object.entries(resolvedParams)
-      .filter(([, value]) => value !== undefined) // Убираем пары с undefined
+      .filter(([, value]) => value !== undefined)
       .map(([key, value]) => [
         key,
         Array.isArray(value) ? value.join(",") : String(value),
-      ]) as string[][], // Явное приведение после фильтрации
+      ]) as string[][],
   );
 
-  // Преобразуем сырые параметры URL в удобный, валидированный объект фильтров
+  // Получаем фильтры из URL
   const filters = parseCatalogFilters(urlSearchParams);
 
-  // Получаем отфильтрованные, безопасные и пагинированные данные
+  // Получаем отфильтрованные и пагинированные товары
   const { products, total, currentPage, totalPages } =
     getFilteredProducts(filters);
 
-  // Исправляем некорректный номер страницы
   const requestedPage = filters.page ?? 1;
 
+  // Исправляем некорректный номер страницы
   if (
     !Number.isFinite(requestedPage) ||
     requestedPage < 1 ||
@@ -136,35 +139,44 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   }
 
   return (
-    // main: единственный основной контент страницы каталога
-    <main className="container mx-auto px-4 py-8 max-w-7xl">
-      {/* header + h1: заголовок страницы каталога */}
+    <main className="container mx-auto max-w-7xl px-4 py-8">
+      {/* Заголовок каталога */}
       <header className="mb-8">
         <h1 className="mb-2 font-heading text-3xl font-bold text-foreground">
           Каталог изделий из дерева
         </h1>
+
         <p className="max-w-3xl text-muted-foreground">
-          Мебельные ножки, балясины и столбы для лестниц из массива дерева.
-          Стандартные изделия и изготовление на заказ.
+          Мебельные ножки, балясины, столбы для лестниц и навершия из массива
+          дерева. Стандартные изделия и изготовление на заказ.
         </p>
       </header>
 
       {/* Основные категории каталога */}
       <CatalogCategories activeHref="/catalog" />
 
-      {/* section: логический блок фильтров */}
+      {/* Поиск по всему каталогу */}
+      <CatalogSearch basePath="/catalog" />
+
+      {/* Фильтры каталога */}
       <section aria-labelledby="catalog-filters-heading" className="mb-6">
         <h2 id="catalog-filters-heading" className="sr-only">
           Фильтры каталога
         </h2>
-        <CatalogFilters currentFilters={filters} totalProducts={total} />
+
+        <CatalogFilters
+          currentFilters={filters}
+          totalProducts={total}
+          basePath="/catalog"
+        />
       </section>
 
-      {/* section: список товаров с Suspense */}
+      {/* Список товаров */}
       <section aria-labelledby="product-list-heading">
         <h2 id="product-list-heading" className="sr-only">
           Список товаров
         </h2>
+
         <Suspense fallback={<LoadingSkeleton />}>
           <ProductGrid
             products={products}
@@ -172,6 +184,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             totalPages={totalPages}
             totalProducts={total}
             activeWoodType={filters.woodType}
+            basePath="/catalog"
           />
         </Suspense>
       </section>

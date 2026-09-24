@@ -7,6 +7,7 @@ import ProductGrid from "@/components/catalog/ProductGrid";
 import CatalogFilters from "@/components/catalog/CatalogFilters";
 import LoadingSkeleton from "@/components/catalog/LoadingSkeleton";
 import { CatalogCategories } from "@/components/catalog/CatalogCategories";
+import { CatalogSearch } from "@/components/catalog/CatalogSearch";
 
 type CatalogSearchParams = Record<string, string | string[] | undefined>;
 
@@ -83,6 +84,9 @@ export async function CategoryCatalog({
 
       {/* Переключение категорий */}
       <CatalogCategories activeHref={basePath} />
+
+      {/* Поиск по каталогу */}
+      <CatalogSearch basePath={basePath} />
 
       {/* Фильтры каталога */}
       <section aria-labelledby="catalog-filters-heading">

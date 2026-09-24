@@ -21,9 +21,11 @@ export async function generateMetadata({
   const page =
     typeof rawPage === "string" ? Math.max(1, parseInt(rawPage, 10) || 1) : 1;
 
-  // Проверяем, используются ли фильтры каталога
+  // Страницы с фильтрами и поиском не индексируем
   const hasFilters =
-    params.woodType !== undefined || params.perPage !== undefined;
+    params.q !== undefined ||
+    params.woodType !== undefined ||
+    params.perPage !== undefined;
 
   // Отдельный title для пагинации
   const title =
@@ -78,7 +80,7 @@ export async function generateMetadata({
       description,
     },
 
-    // Страницы с фильтрами не индексируем
+    // Страницы с фильтрами и поиском не индексируем
     robots: {
       index: !hasFilters,
       follow: true,

@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { HeaderCart } from "@/features/cart/ui/HeaderCart";
 import { MobileMenu } from "./MobileMenu";
+import { GlobalSearch } from "@/components/search/GlobalSearch";
 
 export function Header() {
   return (
@@ -80,6 +81,9 @@ export function Header() {
               Оставить заявку
             </Link>
           </div>
+
+          {/* Поиск */}
+          <GlobalSearch />
 
           {/* Mobile burger */}
           <MobileMenu />

@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw, SearchX } from "lucide-react";
 
 import { ProductCardPreview } from "@/entities/product/ui/ProductCardPreview";
 import type { Product, WoodType } from "@/entities/product/model/types";
@@ -26,12 +26,28 @@ export default function ProductGrid({
 }: ProductGridProps) {
   const searchParams = useSearchParams();
 
-  // Проверяем наличие активных содержательных фильтров
+  // Текущий поисковый запрос
+  const searchQuery = searchParams.get("q")?.trim() ?? "";
+  const hasSearchQuery = searchQuery.length > 0;
+
+  // Проверяем наличие активных фильтров
   const hasActiveFilters =
     searchParams.has("woodType") ||
     searchParams.has("purpose") ||
     searchParams.has("postKind") ||
     searchParams.has("style");
+
+  // Ссылка после очистки поиска
+  const getClearSearchHref = () => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    params.delete("q");
+    params.delete("page");
+
+    const query = params.toString();
+
+    return query ? `${basePath}?${query}` : basePath;
+  };
 
   // Ссылка после сброса фильтров
   const getResetFiltersHref = () => {
@@ -48,7 +64,7 @@ export default function ProductGrid({
     return query ? `${basePath}?${query}` : basePath;
   };
 
-  // Ссылка страницы с сохранением фильтров
+  // Ссылка страницы с сохранением поиска и фильтров
   const getPageHref = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
 
@@ -60,7 +76,6 @@ export default function ProductGrid({
 
     const query = params.toString();
 
-    // Сохраняем текущую категорию при переходе между страницами
     return query ? `${basePath}?${query}` : basePath;
   };
 
@@ -72,15 +87,53 @@ export default function ProductGrid({
         role="status"
         aria-live="polite"
       >
-        {hasActiveFilters ? (
+        {hasSearchQuery ? (
+          <>
+            <SearchX
+              className="mx-auto size-8 text-muted-foreground"
+              aria-hidden="true"
+            />
+
+            <h3 className="mt-4 break-words text-xl font-bold text-foreground">
+              {hasActiveFilters
+                ? `По запросу «${searchQuery}» с выбранными фильтрами ничего не найдено`
+                : `По запросу «${searchQuery}» ничего не найдено`}
+            </h3>
+
+            <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
+              {hasActiveFilters
+                ? "Попробуйте изменить поисковый запрос или сбросить выбранные фильтры."
+                : "Попробуйте изменить поисковый запрос или очистить поле поиска."}
+            </p>
+
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href={getClearSearchHref()}
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+              >
+                <SearchX className="size-4" aria-hidden="true" />
+                Очистить поиск
+              </Link>
+
+              {hasActiveFilters && (
+                <Link
+                  href={getResetFiltersHref()}
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-border bg-background px-5 text-sm font-semibold text-foreground transition hover:bg-secondary/50"
+                >
+                  <RotateCcw className="size-4" aria-hidden="true" />
+                  Сбросить фильтры
+                </Link>
+              )}
+            </div>
+          </>
+        ) : hasActiveFilters ? (
           <>
             <h3 className="text-xl font-bold text-foreground">
               По выбранным фильтрам ничего не найдено
             </h3>
 
             <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
-              Попробуйте изменить параметры поиска или сбросить выбранные
-              фильтры.
+              Попробуйте изменить параметры или сбросить выбранные фильтры.
             </p>
 
             <Link

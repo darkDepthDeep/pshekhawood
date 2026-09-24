@@ -178,7 +178,11 @@ export function ProductCard({ product, initialWoodType }: ProductCardProps) {
         <div>
           {/* Основное изображение */}
           <div
-            className={`group relative w-full overflow-hidden rounded-lg bg-card ${product.category === "legs" ? "aspect-square" : "aspect-4/5"}`}
+            className={`group relative w-full overflow-hidden rounded-lg bg-card ${
+              product.category === "legs"
+                ? "aspect-square"
+                : "aspect-4/5 lg:aspect-[5/6]"
+            }`}
           >
             {selectedImage ? (
               <button

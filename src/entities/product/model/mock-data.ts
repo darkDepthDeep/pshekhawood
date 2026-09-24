@@ -1286,7 +1286,7 @@ export const mockProducts: Product[] = [
   // === БАЛЯСИНА PW-BL-032 ===
   {
     id: "pw-bl-032",
-    name: "Балясина витая каннелированная PW-BL-032",
+    name: "Балясина витая PW-BL-032",
     category: "balusters",
 
     // Типы балясины
